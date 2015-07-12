@@ -23,12 +23,26 @@ import static com.puppycrawl.tools.checkstyle.checks.imports.ImportOrderCheck.MS
 import static com.puppycrawl.tools.checkstyle.checks.imports.ImportOrderCheck.MSG_SEPARATION;
 
 import java.io.File;
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Test;
+
+import sun.reflect.ConstructorAccessor;
+import sun.reflect.FieldAccessor;
+import sun.reflect.ReflectionFactory;
+import antlr.CommonHiddenStreamToken;
 
 import com.puppycrawl.tools.checkstyle.BaseCheckTestSupport;
 import com.puppycrawl.tools.checkstyle.DefaultConfiguration;
 import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
+import com.puppycrawl.tools.checkstyle.api.DetailAST;
+import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
 public class ImportOrderCheckTest extends BaseCheckTestSupport {
     @Test
@@ -384,4 +398,162 @@ public class ImportOrderCheckTest extends BaseCheckTestSupport {
                 + "InputImportOrder_MultiplePatternMatches.java").getCanonicalPath(), expected);
     }
 
+    @Test
+    public void testVisitTokenSwitchReflection() throws Exception {
+        DynamicEnumExtender.addEnum(ImportOrderOption.class, "NEW_OPTION_FOR_UT");
+        ImportOrderCheck check = new ImportOrderCheck ();
+        check.setOption("NEW_OPTION_FOR_UT");
+        
+        DetailAST astImport = mockAST(TokenTypes.IMPORT, "import", "mockfile", 0, 0);
+        DetailAST astIdent = mockAST(TokenTypes.IDENT, "myTestImport", "mockfile", 0, 0);
+        astImport.addChild(astIdent);
+        DetailAST astSemi = mockAST(TokenTypes.SEMI, ";", "mockfile", 0, 0);
+        astIdent.addNextSibling(astSemi);
+
+        check.visitToken(astImport);
+    }
+
+    /**
+     * Creates MOCK lexical token and returns AST node for this token
+     * @param tokenType type of token
+     * @param tokenText text of token
+     * @param tokenFileName file name of token
+     * @param tokenRow token position in a file (row)
+     * @param tokenColumn token position in a file (column)
+     * @return AST node for the token
+     */
+    private static DetailAST mockAST(final int tokenType, final String tokenText,
+            final String tokenFileName, final int tokenRow, final int tokenColumn)
+    {
+        CommonHiddenStreamToken tokenImportSemi = new CommonHiddenStreamToken();
+        tokenImportSemi.setType(tokenType);
+        tokenImportSemi.setText(tokenText);
+        tokenImportSemi.setLine(tokenRow);
+        tokenImportSemi.setColumn(tokenColumn);
+        tokenImportSemi.setFilename(tokenFileName);
+        DetailAST astSemi = new DetailAST();
+        astSemi.initialize(tokenImportSemi);
+        return astSemi;
+    }
+
+}
+
+class DynamicEnumExtender {
+
+    private static ReflectionFactory reflectionFactory =
+        ReflectionFactory.getReflectionFactory();
+
+    private static void setFailsafeFieldValue(Field field, Object target, Object value)
+        throws NoSuchFieldException, IllegalAccessException
+    {
+        // let's make the field accessible
+        field.setAccessible(true);
+
+        // next we change the modifier in the Field instance to
+        // not be final anymore, thus tricking reflection into
+        // letting us modify the static final field
+        Field modifiersField = Field.class.getDeclaredField("modifiers");
+        modifiersField.setAccessible(true);
+        int modifiers = modifiersField.getInt(field);
+
+        // blank out the final bit in the modifiers int
+        modifiers &= ~Modifier.FINAL;
+        modifiersField.setInt(field, modifiers);
+
+        FieldAccessor fa = reflectionFactory.newFieldAccessor(field, false);
+        fa.set(target, value);
+    }
+
+    private static void blankField(Class<?> enumClass, String fieldName)
+        throws NoSuchFieldException, IllegalAccessException
+    {
+        for (Field field : Class.class.getDeclaredFields()) {
+            if (field.getName().contains(fieldName)) {
+                AccessibleObject.setAccessible(new Field[] { field }, true);
+                setFailsafeFieldValue(field, enumClass, null);
+                break;
+            }
+        }
+    }
+
+    private static void cleanEnumCache(Class<?> enumClass)
+        throws NoSuchFieldException, IllegalAccessException
+    {
+        blankField(enumClass, "enumConstantDirectory"); // Sun (Oracle?!?) JDK 1.5/6
+        blankField(enumClass, "enumConstants"); // IBM JDK
+    }
+
+    private static ConstructorAccessor getConstructorAccessor(Class<?> enumClass, Class<?>[] additionalParameterTypes)
+        throws NoSuchMethodException
+    {
+        Class<?>[] parameterTypes = new Class[additionalParameterTypes.length + 2];
+        parameterTypes[0] = String.class;
+        parameterTypes[1] = int.class;
+        System.arraycopy(additionalParameterTypes, 0, parameterTypes, 2, additionalParameterTypes.length);
+        return reflectionFactory.newConstructorAccessor(enumClass .getDeclaredConstructor(parameterTypes));
+    }
+
+    private static Object makeEnum(Class<?> enumClass, String value, int ordinal, Class<?>[] additionalTypes, Object[] additionalValues)
+        throws Exception
+    {
+        Object[] parms = new Object[additionalValues.length + 2];
+        parms[0] = value;
+        parms[1] = Integer.valueOf(ordinal);
+        System.arraycopy(additionalValues, 0, parms, 2, additionalValues.length);
+        return enumClass.cast(getConstructorAccessor(enumClass, additionalTypes).newInstance(parms));
+    }
+
+    /**
+     * Add an enum instance to the enum class given as argument
+     *
+     * @param <T> the type of the enum (implicit)
+     * @param enumType the class of the enum to be modified
+     * @param enumName the name of the new enum instance to be added to the class
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends Enum<?>> void addEnum(Class<T> enumType, String enumName) {
+        // 0. Sanity checks
+        if (!Enum.class.isAssignableFrom(enumType))
+            throw new RuntimeException("class " + enumType + " is not an instance of Enum");
+
+        // 1. Lookup "$VALUES" holder in enum class and get previous enum
+        // instances
+        Field valuesField = null;
+        Field[] fields = enumType.getDeclaredFields();
+        for (Field field : fields) {
+            if (field.getName().contains("$VALUES")) {
+                valuesField = field;
+                break;
+            }
+        }
+        AccessibleObject.setAccessible(new Field[] { valuesField }, true);
+
+        try {
+
+            // 2. Copy it
+            T[] previousValues = (T[]) valuesField.get(enumType);
+            List<T> values = new ArrayList<T>(Arrays.asList(previousValues));
+
+            // 3. build new enum
+            T newValue = (T) makeEnum(
+                enumType,                         // The target enum class
+                enumName,                         // THE NEW ENUM INSTANCE TO BE DYNAMICALLY ADDED
+                values.size(), new Class<?>[] {}, // could be used to pass values to the enum constuctor if needed
+                new Object[] {}                   // could be used to pass values to the enum constuctor if needed
+            );
+
+            // 4. add new value
+            values.add(newValue);
+
+            // 5. Set new values field
+            setFailsafeFieldValue(valuesField, null, values.toArray((T[]) Array.newInstance(enumType, 0)));
+
+            // 6. Clean enum cache
+            cleanEnumCache(enumType);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
 }
