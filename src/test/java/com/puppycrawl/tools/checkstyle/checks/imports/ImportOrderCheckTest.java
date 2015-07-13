@@ -23,13 +23,34 @@ import static com.puppycrawl.tools.checkstyle.checks.imports.ImportOrderCheck.MS
 import static com.puppycrawl.tools.checkstyle.checks.imports.ImportOrderCheck.MSG_SEPARATION;
 
 import java.io.File;
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.internal.util.reflection.Whitebox;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+
+import sun.reflect.ConstructorAccessor;
+import sun.reflect.FieldAccessor;
+import sun.reflect.ReflectionFactory;
+import antlr.CommonHiddenStreamToken;
 
 import com.puppycrawl.tools.checkstyle.BaseCheckTestSupport;
 import com.puppycrawl.tools.checkstyle.DefaultConfiguration;
 import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
+import com.puppycrawl.tools.checkstyle.api.DetailAST;
+import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(ImportOrderOption.class)
 public class ImportOrderCheckTest extends BaseCheckTestSupport {
     @Test
     public void testDefault() throws Exception {
@@ -382,6 +403,58 @@ public class ImportOrderCheckTest extends BaseCheckTestSupport {
         verify(checkConfig, new File("src/test/resources-noncompilable/com/puppycrawl/tools/"
                 + "checkstyle/imports/"
                 + "InputImportOrder_MultiplePatternMatches.java").getCanonicalPath(), expected);
+    }
+
+    @Test
+    public void testVisitTokenSwitchReflection() throws Exception {
+        ImportOrderOption C = PowerMockito.mock(ImportOrderOption.class);
+        Whitebox.setInternalState(C, "name", "NEW_OPTION_FOR_UT");
+        Whitebox.setInternalState(C, "ordinal", 5);
+
+        PowerMockito.mockStatic(ImportOrderOption.class);
+        PowerMockito.when(ImportOrderOption.values()).thenReturn(new ImportOrderOption[]{
+                ImportOrderOption.TOP, ImportOrderOption.ABOVE, ImportOrderOption.INFLOW, 
+                ImportOrderOption.UNDER, ImportOrderOption.BOTTOM, C});
+        PowerMockito.when(Enum.valueOf(ImportOrderOption.class,"TOP")).thenReturn(ImportOrderOption.TOP);
+        PowerMockito.when(Enum.valueOf(ImportOrderOption.class,"ABOVE")).thenReturn(ImportOrderOption.ABOVE);
+        PowerMockito.when(Enum.valueOf(ImportOrderOption.class,"INFLOW")).thenReturn(ImportOrderOption.INFLOW);
+        PowerMockito.when(Enum.valueOf(ImportOrderOption.class,"UNDER")).thenReturn(ImportOrderOption.UNDER);
+        PowerMockito.when(Enum.valueOf(ImportOrderOption.class,"BOTTOM")).thenReturn(ImportOrderOption.BOTTOM);
+        PowerMockito.when(Enum.valueOf(ImportOrderOption.class,"NEW_OPTION_FOR_UT")).thenReturn(C);
+        ImportOrderCheck check = new ImportOrderCheck ();
+        check.setOption("NEW_OPTION_FOR_UT");
+        
+        DetailAST astImport = mockAST(TokenTypes.IMPORT, "import", "mockfile", 0, 0);
+        DetailAST astIdent = mockAST(TokenTypes.IDENT, "myTestImport", "mockfile", 0, 0);
+        astImport.addChild(astIdent);
+        DetailAST astSemi = mockAST(TokenTypes.SEMI, ";", "mockfile", 0, 0);
+        astIdent.addNextSibling(astSemi);
+
+        // expecting IllegalStateException
+        check.visitToken(astImport);
+    }
+
+    /**
+     * Creates MOCK lexical token and returns AST node for this token
+     * @param tokenType type of token
+     * @param tokenText text of token
+     * @param tokenFileName file name of token
+     * @param tokenRow token position in a file (row)
+     * @param tokenColumn token position in a file (column)
+     * @return AST node for the token
+     */
+    private static DetailAST mockAST(final int tokenType, final String tokenText,
+            final String tokenFileName, final int tokenRow, final int tokenColumn)
+    {
+        CommonHiddenStreamToken tokenImportSemi = new CommonHiddenStreamToken();
+        tokenImportSemi.setType(tokenType);
+        tokenImportSemi.setText(tokenText);
+        tokenImportSemi.setLine(tokenRow);
+        tokenImportSemi.setColumn(tokenColumn);
+        tokenImportSemi.setFilename(tokenFileName);
+        DetailAST astSemi = new DetailAST();
+        astSemi.initialize(tokenImportSemi);
+        return astSemi;
     }
 
 }

@@ -240,6 +240,16 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+    	<groupId>org.powermock</groupId>
+    	<artifactId>powermock-api-mockito</artifactId>
+    	<version>1.6.2</version>
+    </dependency>
+    <dependency>
+    	<groupId>org.powermock</groupId>
+    	<artifactId>powermock-module-junit4</artifactId>
+    	<version>1.6.2</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -741,13 +751,14 @@
               <dir>src/site/resources/files</dir>
               <systemId>src/main/resources/com/puppycrawl/tools/checkstyle/suppressions_1_0.dtd</systemId>
             </validationSet> 
+<!--        Commented till #1341 https://github.com/checkstyle/checkstyle/issues/1341
             <validationSet>
               <dir>src/site</dir>
               <includes>
                 <include>site.xml</include>
               </includes>
               <systemId>http://maven.apache.org/xsd/decoration-1.0.0.xsd</systemId>
-            </validationSet>
+            </validationSet>       --> 
             <validationSet>
               <dir>src/main/resources</dir>
               <includes>
@@ -1073,22 +1084,36 @@
             <regex><pattern>.*.Checker</pattern><branchRate>79</branchRate><lineRate>84</lineRate></regex>
             <regex><pattern>.*.ConfigurationLoader</pattern><branchRate>86</branchRate><lineRate>79</lineRate></regex>
             <regex><pattern>.*.ConfigurationLoader\$.*</pattern><branchRate>65</branchRate><lineRate>84</lineRate></regex>
+
+            <regex><pattern>.*.DefaultConfiguration</pattern><branchRate>100</branchRate><lineRate>92</lineRate></regex>
             <regex><pattern>.*.DefaultLogger</pattern><branchRate>75</branchRate><lineRate>76</lineRate></regex>
             <regex><pattern>.*.Main</pattern><branchRate>80</branchRate><lineRate>90</lineRate></regex>
             <regex><pattern>.*.PackageNamesLoader</pattern><branchRate>78</branchRate><lineRate>72</lineRate></regex>
+            <regex><pattern>.*.PackageObjectFactory</pattern><branchRate>75</branchRate><lineRate>75</lineRate></regex>
+            <regex><pattern>.*.PropertiesExpander</pattern><branchRate>50</branchRate><lineRate>83</lineRate></regex>
             <regex><pattern>.*.PropertyCacheFile</pattern><branchRate>22</branchRate><lineRate>19</lineRate></regex>
-            <regex><pattern>.*.TreeWalker</pattern><branchRate>94</branchRate><lineRate>92</lineRate></regex>
+            <regex><pattern>.*.checkstyle.ScopeUtils</pattern><branchRate>90</branchRate><lineRate>94</lineRate></regex>
+            <regex><pattern>.*.TreeWalker</pattern><branchRate>92</branchRate><lineRate>91</lineRate></regex>
+            <regex><pattern>com.puppycrawl.tools.checkstyle.Utils</pattern><branchRate>85</branchRate><lineRate>93</lineRate></regex>
+            <regex><pattern>.*.XMLLogger</pattern><branchRate>86</branchRate><lineRate>97</lineRate></regex>
+
 
             <regex><pattern>.*.api.AbstractFileSetCheck</pattern><branchRate>75</branchRate><lineRate>87</lineRate></regex>
             <regex><pattern>.*.api.AbstractLoader</pattern><branchRate>75</branchRate><lineRate>88</lineRate></regex>
+            <regex><pattern>.*.api.AbstractViolationReporter</pattern><branchRate>100</branchRate><lineRate>90</lineRate></regex>
             <regex><pattern>.*.api.AuditEvent</pattern><branchRate>100</branchRate><lineRate>93</lineRate></regex>
             <regex><pattern>.*.api.AutomaticBean</pattern><branchRate>90</branchRate><lineRate>82</lineRate></regex>
             <regex><pattern>.*.api.AutomaticBean\$.*</pattern><branchRate>75</branchRate><lineRate>90</lineRate></regex>
+            <regex><pattern>.*.api.Check</pattern><branchRate>100</branchRate><lineRate>86</lineRate></regex>
+            <regex><pattern>.*.api.Comment</pattern><branchRate>100</branchRate><lineRate>95</lineRate></regex>
+            <regex><pattern>.*.api.DetailAST</pattern><branchRate>95</branchRate><lineRate>98</lineRate></regex>
             <regex><pattern>.*.api.FileContents</pattern><branchRate>96</branchRate><lineRate>93</lineRate></regex>
             <regex><pattern>.*.api.FileText</pattern><branchRate>50</branchRate><lineRate>59</lineRate></regex>
+            <regex><pattern>.*.api.FullIdent</pattern><branchRate>83</branchRate><lineRate>96</lineRate></regex>
             <regex><pattern>.*.api.JavadocTagInfo</pattern><branchRate>25</branchRate><lineRate>77</lineRate></regex>
             <regex><pattern>.*.api.JavadocTagInfo\$.*</pattern><branchRate>0</branchRate><lineRate>8</lineRate></regex>
             <regex><pattern>.*.api.LocalizedMessage\$.*</pattern><branchRate>41</branchRate><lineRate>66</lineRate></regex>
+            <regex><pattern>.*.api.SeverityLevelCounter</pattern><branchRate>50</branchRate><lineRate>76</lineRate></regex>
             <regex><pattern>.*.api.TokenTypes</pattern><branchRate>62</branchRate><lineRate>80</lineRate></regex>
 
 
@@ -1133,6 +1158,7 @@
             <regex><pattern>.*.checks.coding.CovariantEqualsCheck</pattern><branchRate>95</branchRate><lineRate>96</lineRate></regex>
             <regex><pattern>.*.checks.coding.DeclarationOrderCheck</pattern><branchRate>82</branchRate><lineRate>93</lineRate></regex>
             <regex><pattern>.*.checks.coding.DefaultComesLastCheck</pattern><branchRate>87</branchRate><lineRate>100</lineRate></regex>
+            <regex><pattern>.*.checks.coding.EqualsAvoidNullCheck</pattern><branchRate>79</branchRate><lineRate>100</lineRate></regex>
             <regex><pattern>.*.checks.coding.ExplicitInitializationCheck</pattern><branchRate>91</branchRate><lineRate>97</lineRate></regex>
             <regex><pattern>.*.checks.coding.FallThroughCheck</pattern><branchRate>90</branchRate><lineRate>97</lineRate></regex>
             <regex><pattern>.*.checks.coding.FinalLocalVariableCheck</pattern><branchRate>82</branchRate><lineRate>100</lineRate></regex>
@@ -1143,6 +1169,7 @@
             <regex><pattern>.*.checks.coding.InnerAssignmentCheck</pattern><branchRate>88</branchRate><lineRate>100</lineRate></regex>
             <regex><pattern>.*.checks.coding.ModifiedControlVariableCheck</pattern><branchRate>91</branchRate><lineRate>97</lineRate></regex>
             <regex><pattern>.*.checks.coding.MultipleStringLiteralsCheck</pattern><branchRate>90</branchRate><lineRate>96</lineRate></regex>
+            <regex><pattern>.*.checks.coding.MultipleVariableDeclarationsCheck</pattern><branchRate>96</branchRate><lineRate>100</lineRate></regex>
             <regex><pattern>.*.checks.coding.OverloadMethodsDeclarationOrderCheck</pattern><branchRate>93</branchRate><lineRate>100</lineRate></regex>
             <regex><pattern>.*.checks.coding.ParameterAssignmentCheck</pattern><branchRate>80</branchRate><lineRate>96</lineRate></regex>
             <regex><pattern>.*.checks.coding.ReturnCountCheck</pattern><branchRate>55</branchRate><lineRate>74</lineRate></regex>
@@ -1182,10 +1209,11 @@
             <regex><pattern>.*.checks.javadoc.JavadocMethodCheck</pattern><branchRate>91</branchRate><lineRate>98</lineRate></regex>
             <regex><pattern>.*.checks.javadoc.JavadocPackageCheck</pattern><branchRate>80</branchRate><lineRate>95</lineRate></regex>
             <regex><pattern>.*.checks.javadoc.JavadocParagraphCheck</pattern><branchRate>92</branchRate><lineRate>100</lineRate></regex>
-            <regex><pattern>.*.checks.javadoc.JavadocStyleCheck</pattern><branchRate>89</branchRate><lineRate>98</lineRate></regex>
+            <regex><pattern>.*.checks.javadoc.JavadocStyleCheck</pattern><branchRate>89</branchRate><lineRate>97</lineRate></regex>
             <regex><pattern>.*.checks.javadoc.JavadocTagContinuationIndentationCheck</pattern><branchRate>81</branchRate><lineRate>86</lineRate></regex>
             <regex><pattern>.*.checks.javadoc.JavadocTypeCheck</pattern><branchRate>95</branchRate><lineRate>93</lineRate></regex>
             <regex><pattern>.*.checks.javadoc.JavadocUtils</pattern><branchRate>94</branchRate><lineRate>98</lineRate></regex>
+            <regex><pattern>.*.checks.javadoc.JavadocVariableCheck</pattern><branchRate>93</branchRate><lineRate>92</lineRate></regex>
             <regex><pattern>.*.checks.javadoc.SummaryJavadocCheck</pattern><branchRate>93</branchRate><lineRate>100</lineRate></regex>
             <regex><pattern>.*.checks.javadoc.TagParser</pattern><branchRate>92</branchRate><lineRate>98</lineRate></regex>
             <regex><pattern>.*.checks.javadoc.WriteTagCheck</pattern><branchRate>100</branchRate><lineRate>91</lineRate></regex>
@@ -1222,8 +1250,11 @@
             <regex><pattern>.*.checks.whitespace.WhitespaceAfterCheck</pattern><branchRate>86</branchRate><lineRate>90</lineRate></regex>
 
 
+            <regex><pattern>.*.filters.IntMatchFilter</pattern><branchRate>100</branchRate><lineRate>90</lineRate></regex>
+            <regex><pattern>.*.filters.SuppressElement</pattern><branchRate>82</branchRate><lineRate>88</lineRate></regex>
             <regex><pattern>.*.filters.SuppressionCommentFilter</pattern><branchRate>83</branchRate><lineRate>93</lineRate></regex>
             <regex><pattern>.*.filters.SuppressionCommentFilter\$Tag</pattern><branchRate>96</branchRate><lineRate>94</lineRate></regex>
+            <regex><pattern>.*.filters.SuppressionFilter</pattern><branchRate>100</branchRate><lineRate>58</lineRate></regex>
             <regex><pattern>.*.filters.SuppressionsLoader</pattern><branchRate>68</branchRate><lineRate>77</lineRate></regex>
             <regex><pattern>.*.filters.SuppressWithNearbyCommentFilter</pattern><branchRate>76</branchRate><lineRate>89</lineRate></regex>
             <regex><pattern>.*.filters.SuppressWithNearbyCommentFilter\$Tag</pattern><branchRate>88</branchRate><lineRate>78</lineRate></regex>
