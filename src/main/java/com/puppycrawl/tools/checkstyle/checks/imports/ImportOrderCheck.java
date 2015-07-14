@@ -277,8 +277,7 @@ public class ImportOrderCheck
 
         final boolean isStaticAndNotLastImport = isStatic && !lastImportStatic;
         final boolean isNotStaticAndLastImport = !isStatic && lastImportStatic;
-        final ImportOrderOption abstractOption = getAbstractOption();
-        switch (abstractOption) {
+        switch (getAbstractOption()) {
             case TOP:
                 if (isNotStaticAndLastImport) {
                     lastGroup = Integer.MIN_VALUE;
@@ -311,7 +310,7 @@ public class ImportOrderCheck
 
             default:
                 throw new IllegalStateException(
-                        "Unexpected option for static imports: " + abstractOption.toString());
+                        "Unexpected option for static imports: " + getAbstractOption().toString());
 
         }
 
