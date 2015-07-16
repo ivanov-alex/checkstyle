@@ -418,32 +418,30 @@ public class ImportOrderCheckTest extends BaseCheckTestSupport {
             return null;
         }
     }
-    
-    @Test
+
+    @Test(expected = IllegalStateException.class)
     public void testVisitTokenSwitchReflection() throws Exception {
-          MyAbstractOptionCheck C = PowerMockito.mock(MyAbstractOptionCheck.class);
-          PowerMockito.when(C.getAbstractOption()).thenReturn(null);
+//          MyAbstractOptionCheck C = PowerMockito.mock(MyAbstractOptionCheck.class);
+//          PowerMockito.when(C.getAbstractOption()).thenReturn(null);
 
-//        ImportOrderOption C = PowerMockito.mock(ImportOrderOption.class);
-//        PowerMockito.mockStatic(Enum.class);
-//        Whitebox.setInternalState(C, "name", "NEW_OPTION_FOR_UT");
-//        Whitebox.setInternalState(C, "ordinal", 5);
+        ImportOrderOption C = PowerMockito.mock(ImportOrderOption.class);
+        Whitebox.setInternalState(C, "name", "NEW_OPTION_FOR_UT");
+        Whitebox.setInternalState(C, "ordinal", 5);
 
-//        PowerMockito.mockStatic(ImportOrderOption.class);
-//        PowerMockito.when(ImportOrderOption.values()).thenReturn(new ImportOrderOption[]{
-//                ImportOrderOption.TOP, ImportOrderOption.ABOVE, ImportOrderOption.INFLOW, 
-//                ImportOrderOption.UNDER, ImportOrderOption.BOTTOM, C});
-//        PowerMockito.when(Enum.valueOf(ImportOrderOption.class,"TOP")).thenReturn(ImportOrderOption.TOP);
-//        PowerMockito.when(Enum.valueOf(ImportOrderOption.class,"ABOVE")).thenReturn(ImportOrderOption.ABOVE);
-//        PowerMockito.when(Enum.valueOf(ImportOrderOption.class,"INFLOW")).thenReturn(ImportOrderOption.INFLOW);
-//        PowerMockito.when(Enum.valueOf(ImportOrderOption.class,"UNDER")).thenReturn(ImportOrderOption.UNDER);
-//        PowerMockito.when(Enum.valueOf(ImportOrderOption.class,"BOTTOM")).thenReturn(ImportOrderOption.BOTTOM);
-//        PowerMockito.when(Enum.valueOf(ImportOrderOption.class,"NEW_OPTION_FOR_UT")).thenReturn(C);
+        PowerMockito.mockStatic(ImportOrderOption.class);
+        PowerMockito.when(ImportOrderOption.values()).thenReturn(new ImportOrderOption[]{
+                ImportOrderOption.TOP, ImportOrderOption.ABOVE, ImportOrderOption.INFLOW, 
+                ImportOrderOption.UNDER, ImportOrderOption.BOTTOM, C});
+
+        PowerMockito.mockStatic(Enum.class);
+        PowerMockito.when(Enum.valueOf(ImportOrderOption.class,"TOP")).thenReturn(ImportOrderOption.TOP);
+        PowerMockito.when(Enum.valueOf(ImportOrderOption.class,"ABOVE")).thenReturn(ImportOrderOption.ABOVE);
+        PowerMockito.when(Enum.valueOf(ImportOrderOption.class,"INFLOW")).thenReturn(ImportOrderOption.INFLOW);
+        PowerMockito.when(Enum.valueOf(ImportOrderOption.class,"UNDER")).thenReturn(ImportOrderOption.UNDER);
+        PowerMockito.when(Enum.valueOf(ImportOrderOption.class,"BOTTOM")).thenReturn(ImportOrderOption.BOTTOM);
+        PowerMockito.when(Enum.valueOf(ImportOrderOption.class,"NEW_OPTION_FOR_UT")).thenReturn(C);
         ImportOrderCheck check = new ImportOrderCheck ();
-//        check.setOption("NEW_OPTION_FOR_UT");
-        
-//        ImportOrderCheck check = PowerMockito.mock(ImportOrderCheck.class);
-//        PowerMockito.when(check.getAbstractOption()).thenReturn(null);
+        check.setOption("NEW_OPTION_FOR_UT");
         
         DetailAST astImport = mockAST(TokenTypes.IMPORT, "import", "mockfile", 0, 0);
         DetailAST astIdent = mockAST(TokenTypes.IDENT, "myTestImport", "mockfile", 0, 0);
@@ -451,7 +449,7 @@ public class ImportOrderCheckTest extends BaseCheckTestSupport {
         DetailAST astSemi = mockAST(TokenTypes.SEMI, ";", "mockfile", 0, 0);
         astIdent.addNextSibling(astSemi);
 
-        // expecting IllegalStateException
+        //expecting IllegalStateException
         check.visitToken(astImport);
     }
 
