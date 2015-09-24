@@ -182,4 +182,44 @@ public class ImportControlCheckTest extends BaseCheckTestSupport {
                 + "InputImportControl.java"), expected);
     }
 
+    @Test
+    public void testUrlPositive() throws Exception {
+        final DefaultConfiguration checkConfig = createCheckConfig(ImportControlCheck.class);
+        checkConfig.addAttribute("url", "https://raw.githubusercontent.com/checkstyle/checkstyle/master/src/test/resources/com/puppycrawl/tools/checkstyle/imports/import-control_one.xml");
+        final String[] expected = {"5:1: " + getCheckMessage(MSG_DISALLOWED, "java.io.File")};
+
+        verify(checkConfig, getPath("imports" + File.separator
+                + "InputImportControl.java"), expected);
+    }
+
+    @Test(expected = AssertionError.class)
+    public void testUrlBlank() throws Exception {
+        final DefaultConfiguration checkConfig = createCheckConfig(ImportControlCheck.class);
+        checkConfig.addAttribute("url", "");
+        final String[] expected = {};
+
+        verify(checkConfig, getPath("imports" + File.separator
+                + "InputImportControl.java"), expected);
+    }
+
+    @Test(expected = CheckstyleException.class)
+    public void testUrlUnableToLoad() throws Exception {
+        final DefaultConfiguration checkConfig = createCheckConfig(ImportControlCheck.class);
+        checkConfig.addAttribute("url", "https://UNABLE_TO_LOAD.raw.githubusercontent.com/checkstyle/checkstyle/master/src/test/resources/com/puppycrawl/tools/checkstyle/imports/import-control_one.xml");
+        final String[] expected = {};
+
+        verify(checkConfig, getPath("imports" + File.separator
+                + "InputImportControl.java"), expected);
+    }
+
+    @Test(expected = CheckstyleException.class)
+    public void testUrlIncorrectUrl() throws Exception {
+        final DefaultConfiguration checkConfig = createCheckConfig(ImportControlCheck.class);
+        checkConfig.addAttribute("url", "https://{WrongChars}.raw.githubusercontent.com/checkstyle/checkstyle/master/src/test/resources/com/puppycrawl/tools/checkstyle/imports/import-control_one.xml");
+        final String[] expected = {};
+
+        verify(checkConfig, getPath("imports" + File.separator
+                + "InputImportControl.java"), expected);
+    }
+
 }
