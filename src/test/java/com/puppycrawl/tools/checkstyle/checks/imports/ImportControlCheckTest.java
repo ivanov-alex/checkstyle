@@ -183,20 +183,32 @@ public class ImportControlCheckTest extends BaseCheckTestSupport {
     }
 
     @Test
-    public void testUrlPositive() throws Exception {
+    public void testUrl() throws Exception {
         final DefaultConfiguration checkConfig = createCheckConfig(ImportControlCheck.class);
-        checkConfig.addAttribute("url", "https://raw.githubusercontent.com/checkstyle/checkstyle/master/src/test/resources/com/puppycrawl/tools/checkstyle/imports/import-control_one.xml");
+        checkConfig.addAttribute("url", "https://raw.githubusercontent.com/checkstyle/checkstyle/master/" +
+                "src/test/resources/com/puppycrawl/tools/checkstyle/imports/import-control_one.xml");
         final String[] expected = {"5:1: " + getCheckMessage(MSG_DISALLOWED, "java.io.File")};
 
         verify(checkConfig, getPath("imports" + File.separator
                 + "InputImportControl.java"), expected);
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
+    public void testUrlLocal() throws Exception {
+        final DefaultConfiguration checkConfig = createCheckConfig(ImportControlCheck.class);
+        checkConfig.addAttribute("url", "file://" + getPath("imports" + File.separator
+                + "import-control_one.xml"));
+        final String[] expected = {"5:1: " + getCheckMessage(MSG_DISALLOWED, "java.io.File")};
+
+        verify(checkConfig, getPath("imports" + File.separator
+                + "InputImportControl.java"), expected);
+    }
+
+    @Test
     public void testUrlBlank() throws Exception {
         final DefaultConfiguration checkConfig = createCheckConfig(ImportControlCheck.class);
         checkConfig.addAttribute("url", "");
-        final String[] expected = {};
+        final String[] expected = {"1:40: " + getCheckMessage(MSG_MISSING_FILE)};
 
         verify(checkConfig, getPath("imports" + File.separator
                 + "InputImportControl.java"), expected);
@@ -205,8 +217,8 @@ public class ImportControlCheckTest extends BaseCheckTestSupport {
     @Test(expected = CheckstyleException.class)
     public void testUrlUnableToLoad() throws Exception {
         final DefaultConfiguration checkConfig = createCheckConfig(ImportControlCheck.class);
-        checkConfig.addAttribute("url", "https://UNABLE_TO_LOAD.raw.githubusercontent.com/checkstyle/checkstyle/master/src/test/resources/com/puppycrawl/tools/checkstyle/imports/import-control_one.xml");
-        final String[] expected = {};
+        checkConfig.addAttribute("url", "https://UnableToLoadThisURL");
+        final String[] expected = ArrayUtils.EMPTY_STRING_ARRAY;
 
         verify(checkConfig, getPath("imports" + File.separator
                 + "InputImportControl.java"), expected);
@@ -215,8 +227,8 @@ public class ImportControlCheckTest extends BaseCheckTestSupport {
     @Test(expected = CheckstyleException.class)
     public void testUrlIncorrectUrl() throws Exception {
         final DefaultConfiguration checkConfig = createCheckConfig(ImportControlCheck.class);
-        checkConfig.addAttribute("url", "https://{WrongChars}.raw.githubusercontent.com/checkstyle/checkstyle/master/src/test/resources/com/puppycrawl/tools/checkstyle/imports/import-control_one.xml");
-        final String[] expected = {};
+        checkConfig.addAttribute("url", "https://{WrongCharsInURL}");
+        final String[] expected = ArrayUtils.EMPTY_STRING_ARRAY;
 
         verify(checkConfig, getPath("imports" + File.separator
                 + "InputImportControl.java"), expected);
