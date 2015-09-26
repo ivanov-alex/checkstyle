@@ -185,17 +185,6 @@ public class ImportControlCheckTest extends BaseCheckTestSupport {
     @Test
     public void testUrl() throws Exception {
         final DefaultConfiguration checkConfig = createCheckConfig(ImportControlCheck.class);
-        checkConfig.addAttribute("url", "https://raw.githubusercontent.com/checkstyle/checkstyle/master/" +
-                "src/test/resources/com/puppycrawl/tools/checkstyle/imports/import-control_one.xml");
-        final String[] expected = {"5:1: " + getCheckMessage(MSG_DISALLOWED, "java.io.File")};
-
-        verify(checkConfig, getPath("imports" + File.separator
-                + "InputImportControl.java"), expected);
-    }
-
-    @Test
-    public void testUrlLocal() throws Exception {
-        final DefaultConfiguration checkConfig = createCheckConfig(ImportControlCheck.class);
         checkConfig.addAttribute("url", "file://" + getPath("imports" + File.separator
                 + "import-control_one.xml"));
         final String[] expected = {"5:1: " + getCheckMessage(MSG_DISALLOWED, "java.io.File")};
